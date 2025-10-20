@@ -1,0 +1,275 @@
+/* Enhanced Visual Styles for Chat Platform */
+
+/* Improved Avatar Gradients */
+.avatar-placeholder {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.5px;
+}
+
+/* Variety of gradient colors based on position */
+.message:nth-child(5n+1) .avatar-placeholder {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.message:nth-child(5n+2) .avatar-placeholder {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.message:nth-child(5n+3) .avatar-placeholder {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.message:nth-child(5n+4) .avatar-placeholder {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.message:nth-child(5n+5) .avatar-placeholder {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+/* Enhanced Image Display */
+.message-image {
+  border-radius: 16px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  max-width: 500px !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.message-image:hover {
+  transform: scale(1.02) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18) !important;
+}
+
+.message-image img {
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: high-quality !important;
+  max-height: 600px !important;
+  object-fit: contain !important;
+  background: #f9fafb !important;
+}
+
+/* Message Container Enhancements */
+.messages-container {
+  background: linear-gradient(to bottom, #f9fafb 0%, #ffffff 100%) !important;
+}
+
+.message {
+  border-radius: 12px !important;
+  padding: 16px 20px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+.message:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Avatar Enhancements */
+.message-avatar {
+  width: 48px !important;
+  height: 48px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  border: 2px solid white !important;
+  transition: transform 0.3s !important;
+}
+
+.message:hover .message-avatar {
+  transform: scale(1.05) !important;
+}
+
+/* Author Name Styling */
+.message-author {
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  font-size: 15px !important;
+  letter-spacing: 0.3px !important;
+}
+
+/* Message Text */
+.message-text {
+  line-height: 1.6 !important;
+  font-size: 15px !important;
+  letter-spacing: 0.2px !important;
+}
+
+/* Own Message Styling */
+.own-message {
+  margin-left: auto !important;
+  max-width: 85% !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25) !important;
+}
+
+.own-message .message-author {
+  background: white !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.own-message:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b3fa0 100%) !important;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35) !important;
+}
+
+/* Channel Browser Cards */
+.channel-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.channel-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Buttons */
+.btn-primary, .btn-video-call {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-primary:hover, .btn-video-call:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4) !important;
+}
+
+/* Smooth Scrolling */
+.messages-container {
+  scroll-behavior: smooth !important;
+}
+
+/* Input Focus States */
+.message-input textarea:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* Loading States */
+.spinner {
+  border-top-color: #667eea !important;
+}
+
+/* Image Viewer */
+.image-viewer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+  backdrop-filter: blur(10px);
+}
+
+.image-viewer-container {
+  max-width: 95vw;
+  max-height: 95vh;
+  position: relative;
+  animation: zoomIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.image-viewer-image {
+  max-width: 100%;
+  max-height: 95vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
+}
+
+.image-viewer-close {
+  position: absolute;
+  top: -50px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+}
+
+.image-viewer-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+.image-viewer-controls {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+}
+
+.btn-download {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-download:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Smooth Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
