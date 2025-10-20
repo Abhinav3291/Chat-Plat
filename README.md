@@ -186,36 +186,7 @@ chat-platform/
 └── package.json
 ```
 
-## 🔐 Environment Variables
 
-```env
-# Server
-PORT=5000
-NODE_ENV=development
-
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=chat_platform
-DB_USER=postgres
-DB_PASSWORD=postgres
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-
-# JWT
-JWT_SECRET=your_super_secret_jwt_key
-JWT_EXPIRE=7d
-
-# File Upload
-MAX_FILE_SIZE=5242880
-UPLOAD_PATH=./uploads
-
-# Frontend
-CLIENT_URL=http://localhost:3000
-```
 
 ## 🧪 API Endpoints
 
