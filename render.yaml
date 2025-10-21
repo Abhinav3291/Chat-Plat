@@ -1,0 +1,59 @@
+# Render Blueprint for Chat Platform
+# This file automates the deployment of all services on Render
+
+databases:
+  - name: chat-platform-db
+    databaseName: chat_platform
+    user: chat_user
+    plan: free # or 'starter' for $7/month
+
+  - name: chat-platform-redis
+    plan: free # 25MB, or 'starter' for 256MB at $10/month
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: [] # Allow all connections
+
+services:
+  # Backend API (Node.js + Express + Socket.io)
+  - type: web
+    name: chat-platform-api
+    env: node
+    plan: free # or 'starter' for $7/month (no cold starts)
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chat-platform-db
+          property: connectionString
+      - key: REDIS_URL
+        fromDatabase:
+          name: chat-platform-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        value: https://chat-platform-web.onrender.com # Update after frontend is deployed
+      - key: MAX_FILE_SIZE
+        value: 52428800
+      - key: UPLOAD_PATH
+        value: ./uploads
+
+  # Frontend (React Static Site)
+  - type: web
+    name: chat-platform-web
+    env: static
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: ./client/build
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://chat-platform-api.onrender.com # Update after backend is deployed
+
