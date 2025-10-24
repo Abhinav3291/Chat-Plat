@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { API_URL } from '../../config';
 import { 
   Box, 
   Button, 
@@ -13,6 +15,14 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -22,8 +32,13 @@ import {
   Delete as DeleteIcon,
   Dashboard as DashboardIcon,
   History as HistoryIcon,
+  Close as CloseIcon,
+  Public as PublicIcon,
+  Lock as LockIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import ChannelBrowser from '../Chat/ChannelBrowser';
+import UserBrowser from '../Chat/UserBrowser';
 
 interface Channel {
   id: string;
@@ -44,7 +59,6 @@ interface SidebarProps {
   selectedChannel: Channel | null;
   onSelectChannel: (channel: Channel) => void;
   onChannelCreated: (channel: Channel) => void;
-  onNewChat: () => void;
   onDeleteChannel: (channelId: string) => void;
 }
 
@@ -53,16 +67,45 @@ const Sidebar: React.FC<SidebarProps> = ({
   selectedChannel, 
   onSelectChannel, 
   onChannelCreated,
-  onNewChat,
   onDeleteChannel
 }) => {
   const theme = useTheme();
-  const { user } = useAuth();
+  const { token } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showBrowserModal, setShowBrowserModal] = useState(false);
+  const [showUserBrowser, setShowUserBrowser] = useState(false);
+  const [channelName, setChannelName] = useState('');
+  const [channelDescription, setChannelDescription] = useState('');
+  const [channelType, setChannelType] = useState('public');
 
   const filteredChannels = channels.filter(channel =>
     channel.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleCreateChannel = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/channels`,
+        {
+          name: channelName,
+          description: channelDescription,
+          type: channelType
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      onChannelCreated(response.data.channel);
+      setShowCreateModal(false);
+      setChannelName('');
+      setChannelDescription('');
+      setChannelType('public');
+    } catch (error) {
+      console.error('Error creating channel:', error);
+    }
+  };
 
   return (
     <Box
@@ -81,10 +124,28 @@ const Sidebar: React.FC<SidebarProps> = ({
       }}
     >
       {/* Header */}
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', height: '64px' }}>
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
         <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
           Chat Platform
         </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <IconButton
+            size="small"
+            onClick={() => setShowUserBrowser(true)}
+            title="New Direct Message"
+            sx={{ color: theme.palette.text.secondary }}
+          >
+            💬
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => setShowCreateModal(true)}
+            title="Create Channel"
+            sx={{ color: theme.palette.text.secondary }}
+          >
+            <AddIcon fontSize="small" />
+          </IconButton>
+        </Box>
       </Box>
       
       <Divider />
@@ -113,28 +174,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         />
       </Box>
 
-      {/* New Chat Button */}
-      <Box sx={{ px: 2, mb: 2 }}>
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<AddIcon />}
-            onClick={onNewChat}
-            sx={{
-              borderRadius: 2,
-              py: 1,
-              justifyContent: 'flex-start',
-              pl: 2,
-              borderColor: theme.palette.primary.main,
-              color: theme.palette.primary.main,
-              '&:hover': {
-                backgroundColor: theme.palette.primary.main + '10',
-              },
-            }}
-          >
-            New chat
-          </Button>
-      </Box>
 
       {/* Recent Chats */}
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -217,6 +256,86 @@ const Sidebar: React.FC<SidebarProps> = ({
           </ListItem>
         </List>
       </Box>
+
+      {/* Create Channel Modal */}
+      <Dialog open={showCreateModal} onClose={() => setShowCreateModal(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            Create New Channel
+            <IconButton onClick={() => setShowCreateModal(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <form onSubmit={handleCreateChannel}>
+          <DialogContent>
+            <TextField
+              fullWidth
+              label="Channel Name"
+              value={channelName}
+              onChange={(e) => setChannelName(e.target.value)}
+              required
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Description"
+              value={channelDescription}
+              onChange={(e) => setChannelDescription(e.target.value)}
+              multiline
+              rows={3}
+              sx={{ mb: 2 }}
+            />
+            <FormControl fullWidth>
+              <InputLabel>Channel Type</InputLabel>
+              <Select
+                value={channelType}
+                onChange={(e) => setChannelType(e.target.value)}
+                label="Channel Type"
+              >
+                <MenuItem value="public">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <PublicIcon fontSize="small" />
+                    Public
+                  </Box>
+                </MenuItem>
+                <MenuItem value="private">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <LockIcon fontSize="small" />
+                    Private
+                  </Box>
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowCreateModal(false)}>Cancel</Button>
+            <Button type="submit" variant="contained">Create Channel</Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Channel Browser Modal */}
+      {showBrowserModal && (
+        <ChannelBrowser
+          onClose={() => setShowBrowserModal(false)}
+          onChannelJoined={() => {
+            setShowBrowserModal(false);
+            window.location.reload();
+          }}
+        />
+      )}
+
+      {/* User Browser Modal */}
+      {showUserBrowser && (
+        <UserBrowser
+          onClose={() => setShowUserBrowser(false)}
+          onDMCreated={(channel) => {
+            onChannelCreated(channel);
+            setShowUserBrowser(false);
+          }}
+        />
+      )}
     </Box>
   );
 };

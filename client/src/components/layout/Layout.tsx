@@ -147,27 +147,6 @@ const Layout: React.FC = () => {
     handleSendMessage(question);
   };
 
-  const handleNewChat = async () => {
-    try {
-      const response = await axios.post(
-        `${API_URL}/api/channels`,
-        {
-          name: `New ${selectedModel} Chat`,
-          description: `Chat using ${selectedModel} model`,
-          type: 'public'
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      const newChannel = response.data.channel;
-      setChannels([newChannel, ...channels]);
-      setSelectedChannel(newChannel);
-      setShowWelcome(false);
-    } catch (error) {
-      console.error('Error creating new chat:', error);
-    }
-  };
 
   const handleDeleteChannel = async (channelId: string) => {
     try {
@@ -204,7 +183,6 @@ const Layout: React.FC = () => {
         selectedChannel={selectedChannel}
         onSelectChannel={handleChannelSelect}
         onChannelCreated={handleChannelCreated}
-        onNewChat={handleNewChat}
         onDeleteChannel={handleDeleteChannel}
       />
       <Box
