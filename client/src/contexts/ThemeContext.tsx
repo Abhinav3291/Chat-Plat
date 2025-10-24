@@ -19,6 +19,15 @@ export const useThemeContext = () => {
   return context;
 };
 
+// Legacy export for backward compatibility
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return { theme: context.mode, toggleTheme: context.toggleTheme };
+};
+
 interface ThemeProviderProps {
   children: React.ReactNode;
 }
