@@ -21,6 +21,8 @@
    PORT=5000
    CLIENT_URL=https://your-frontend-url.onrender.com
    ```
+   
+   **Note**: No Redis configuration needed! App uses in-memory storage for socket management.
 
 6. **Add PostgreSQL Database**:
    - In your web service dashboard, go to **"Environment"**
@@ -78,9 +80,7 @@ DATABASE_URL=postgresql://... (auto-set by Render PostgreSQL)
 CLIENT_URL=https://your-frontend-url.onrender.com
 PORT=5000
 
-# Optional (for Redis/scaling - leave unset for free tier)
-# ENABLE_REDIS=true
-# REDIS_URL=redis://...
+# That's it! No Redis needed - uses in-memory storage
 ```
 
 ### Frontend (Static Site)
@@ -94,22 +94,17 @@ REACT_APP_WS_URL=https://your-backend-name.onrender.com
 
 ## 🎯 Key Points
 
-### ✅ **Free Tier Works Perfectly!**
-- No Redis required
-- Single-instance mode
-- All features work (messaging, video calls, file uploads, etc.)
-- PostgreSQL database included
+### ✅ **Super Simple Setup!**
+- **No Redis needed** - Uses in-memory storage
+- **Only PostgreSQL required** - Included in free tier
+- **All features work** - Messaging, video calls, file uploads, reactions, etc.
+- **Entry-level friendly** - Minimal dependencies
 
 ### ⚠️ **Free Tier Limitations**
 - Service spins down after 15 minutes of inactivity
 - First request after spin-down takes ~30 seconds
 - 750 hours/month free compute time
-
-### 🚀 **To Enable Redis (Optional)**
-Only needed for horizontal scaling (multiple instances):
-1. Add Redis service on Render
-2. Set `ENABLE_REDIS=true`
-3. Set `REDIS_URL` from Redis service
+- Single instance only (perfect for portfolio projects!)
 
 ---
 
@@ -134,9 +129,6 @@ Everything should work perfectly! 🎉
 ### Issue: "CORS error"
 - **Solution**: Make sure `CLIENT_URL` in backend matches your frontend URL exactly
 
-### Issue: "Redis connection error"
-- **Solution**: Make sure you don't have `ENABLE_REDIS=true` set (it should be unset for free tier)
-
 ### Issue: "Service is slow"
 - **Cause**: Free tier spins down after inactivity
 - **Solution**: First request takes ~30 seconds. Subsequent requests are fast.
@@ -145,18 +137,17 @@ Everything should work perfectly! 🎉
 
 ## 💰 Cost Breakdown
 
-### Free Tier (Perfect for Portfolio)
+### Free Tier (Perfect for Portfolio & Entry-Level Projects)
 - **Backend**: Free (750 hours/month)
 - **Frontend**: Free (100 GB bandwidth/month)
 - **PostgreSQL**: Free (1 GB storage)
+- **No Redis needed**: Free!
 - **Total**: **$0/month** ✅
 
-### With Redis (Production Scale)
-- **Backend**: Free or $7/month (for always-on)
-- **Frontend**: Free
-- **PostgreSQL**: Free or $7/month (for 10 GB)
-- **Redis**: $7/month
-- **Total**: **~$7-21/month** (only when you need scaling)
+### Upgrade Options (When You Need Them)
+- **Always-on backend**: $7/month (no spin-down)
+- **More storage**: $7/month (10 GB PostgreSQL)
+- **Total**: **~$7-14/month** (only if needed)
 
 ---
 
