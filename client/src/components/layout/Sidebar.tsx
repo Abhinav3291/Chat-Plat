@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   Button, 
@@ -10,13 +10,18 @@ import {
   ListItemButton,
   ListItemText,
   ListItemIcon,
+  TextField,
+  InputAdornment,
   IconButton,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Chat as ChatIcon,
   Settings as SettingsIcon,
-  MoreVert as MoreVertIcon,
+  Search as SearchIcon,
+  Delete as DeleteIcon,
+  Dashboard as DashboardIcon,
+  History as HistoryIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -49,6 +54,11 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const theme = useTheme();
   const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredChannels = channels.filter(channel =>
+    channel.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <Box
@@ -66,90 +76,144 @@ const Sidebar: React.FC<SidebarProps> = ({
         overflow: 'hidden',
       }}
     >
+      {/* Header */}
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', height: '64px' }}>
-        <Typography variant="h6" sx={{ fontWeight: 500 }}>Chat Platform</Typography>
+        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
+          Chat Platform
+        </Typography>
       </Box>
+      
       <Divider />
+      
+      {/* Search */}
+      <Box sx={{ p: 2 }}>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Q Search Chats"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2,
+              backgroundColor: theme.palette.background.paper,
+            },
+          }}
+        />
+      </Box>
+
+      {/* New Chat Button */}
+      <Box sx={{ px: 2, mb: 2 }}>
+        <Button
+          fullWidth
+          variant="outlined"
+          startIcon={<AddIcon />}
+          onClick={() => {
+            console.log('Create new chat');
+          }}
+          sx={{
+            borderRadius: 2,
+            py: 1,
+            justifyContent: 'flex-start',
+            pl: 2,
+            borderColor: theme.palette.primary.main,
+            color: theme.palette.primary.main,
+            '&:hover': {
+              backgroundColor: theme.palette.primary.main + '10',
+            },
+          }}
+        >
+          New chat
+        </Button>
+      </Box>
+
+      {/* Recent Chats */}
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-        <Box sx={{ p: 2, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              // This would trigger channel creation modal
-              console.log('Create new channel');
-            }}
-            sx={{
-              borderRadius: 3,
-              py: 1,
-              mb: 2,
-              justifyContent: 'flex-start',
-              pl: 2,
-              borderColor: 'rgba(138, 180, 248, 0.2)',
-              color: theme.palette.mode === 'dark' ? '#8ab4f8' : '#1a73e8',
-              '&:hover': {
-                borderColor: 'rgba(138, 180, 248, 0.5)',
-                backgroundColor: 'rgba(138, 180, 248, 0.08)',
-              },
-            }}
-          >
-            New channel
-          </Button>
-          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, px: 1 }}>
-            Channels
+        <Box sx={{ px: 2, mb: 1 }}>
+          <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 500 }}>
+            Recent chats
           </Typography>
-          <List sx={{ flex: 1, minHeight: 0, overflowY: 'auto', py: 0 }}>
-            {channels.map((channel) => (
-              <ListItem key={channel.id} disablePadding>
-                <ListItemButton
-                  selected={selectedChannel?.id === channel.id}
-                  onClick={() => onSelectChannel(channel)}
-                  sx={{
-                    borderRadius: 1,
-                    mx: 1,
-                    mb: 0.5,
-                    '&.Mui-selected': {
-                      backgroundColor: theme.palette.primary.main + '20',
-                      '&:hover': {
-                        backgroundColor: theme.palette.primary.main + '30',
-                      },
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 36 }}>
-                    <ChatIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary={channel.name}
-                    secondary={channel.type === 'private' ? 'Private' : 'Public'}
-                    primaryTypographyProps={{
-                      fontSize: '14px',
-                      fontWeight: selectedChannel?.id === channel.id ? 500 : 400,
-                    }}
-                    secondaryTypographyProps={{
-                      fontSize: '12px',
-                    }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
         </Box>
-        
-        <Box sx={{ mt: 'auto' }}>
-          <Divider />
-          <List sx={{ py: 0 }}>
-            <ListItem disablePadding>
-              <ListItemButton sx={{ py: 1.5, px: 2 }}>
+        <List sx={{ flex: 1, minHeight: 0, overflowY: 'auto', py: 0 }}>
+          {filteredChannels.map((channel) => (
+            <ListItem key={channel.id} disablePadding>
+              <ListItemButton
+                selected={selectedChannel?.id === channel.id}
+                onClick={() => onSelectChannel(channel)}
+                sx={{
+                  borderRadius: 1,
+                  mx: 1,
+                  mb: 0.5,
+                  '&.Mui-selected': {
+                    backgroundColor: theme.palette.primary.main + '20',
+                    '&:hover': {
+                      backgroundColor: theme.palette.primary.main + '30',
+                    },
+                  },
+                }}
+              >
                 <ListItemIcon sx={{ minWidth: 36 }}>
-                  <SettingsIcon fontSize="small" />
+                  <ChatIcon fontSize="small" />
                 </ListItemIcon>
-                <ListItemText primary="Settings" />
+                <ListItemText 
+                  primary={channel.name}
+                  primaryTypographyProps={{
+                    fontSize: '14px',
+                    fontWeight: selectedChannel?.id === channel.id ? 500 : 400,
+                  }}
+                />
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('Delete chat', channel.id);
+                  }}
+                  sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
               </ListItemButton>
             </ListItem>
-          </List>
-        </Box>
+          ))}
+        </List>
+      </Box>
+      
+      {/* Navigation */}
+      <Box sx={{ mt: 'auto' }}>
+        <Divider />
+        <List sx={{ py: 0 }}>
+          <ListItem disablePadding>
+            <ListItemButton sx={{ py: 1.5, px: 2 }}>
+              <ListItemIcon sx={{ minWidth: 36 }}>
+                <DashboardIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Dashboard" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton sx={{ py: 1.5, px: 2 }}>
+              <ListItemIcon sx={{ minWidth: 36 }}>
+                <SettingsIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Settings" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton sx={{ py: 1.5, px: 2 }}>
+              <ListItemIcon sx={{ minWidth: 36 }}>
+                <HistoryIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Activity" />
+            </ListItemButton>
+          </ListItem>
+        </List>
       </Box>
     </Box>
   );

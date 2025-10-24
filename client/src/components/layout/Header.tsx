@@ -5,11 +5,14 @@ import {
   useTheme,
   IconButton,
   Avatar,
+  FormControl,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   Brightness4,
   Brightness7,
-  AccountCircle as AccountIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useThemeContext } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -38,6 +41,23 @@ const Header: React.FC = () => {
         Chat Platform
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <Select
+            value="general"
+            displayEmpty
+            sx={{
+              '& .MuiSelect-select': {
+                py: 0.5,
+              },
+            }}
+          >
+            <MenuItem value="general">General Chat</MenuItem>
+            <MenuItem value="technical">Technical Support</MenuItem>
+            <MenuItem value="business">Business Analytics</MenuItem>
+            <MenuItem value="creative">Creative Writing</MenuItem>
+            <MenuItem value="research">Research Assistant</MenuItem>
+          </Select>
+        </FormControl>
         <IconButton
           onClick={toggleTheme}
           size="small"
@@ -50,22 +70,28 @@ const Header: React.FC = () => {
         >
           {isDarkMode ? <Brightness7 /> : <Brightness4 />}
         </IconButton>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Avatar 
-            sx={{ 
-              width: 32, 
-              height: 32,
-              backgroundColor: theme.palette.primary.main,
-              fontSize: '14px',
-              fontWeight: 500,
-            }}
-          >
-            {user?.displayName?.charAt(0)?.toUpperCase() || user?.username?.charAt(0)?.toUpperCase() || 'U'}
-          </Avatar>
-          <Typography variant="body2" color="text.secondary">
-            {user?.displayName || user?.username}
-          </Typography>
-        </Box>
+        <IconButton
+          size="small"
+          sx={{ 
+            color: theme.palette.text.secondary,
+            '&:hover': {
+              backgroundColor: theme.palette.action.hover,
+            }
+          }}
+        >
+          <SettingsIcon />
+        </IconButton>
+        <Avatar 
+          sx={{ 
+            width: 32, 
+            height: 32,
+            backgroundColor: theme.palette.primary.main,
+            fontSize: '14px',
+            fontWeight: 500,
+          }}
+        >
+          {user?.displayName?.charAt(0)?.toUpperCase() || user?.username?.charAt(0)?.toUpperCase() || 'U'}
+        </Avatar>
       </Box>
     </Box>
   );

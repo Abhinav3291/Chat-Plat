@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Box, CssBaseline } from '@mui/material';
+import { Box, CssBaseline, Typography } from '@mui/material';
 import axios from 'axios';
 import { API_URL } from '../../config';
 import { useAuth } from '../../contexts/AuthContext';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import ChatWindow from '../Chat/ChatWindow';
+import ModelSelector from '../common/ModelSelector';
+import SuggestedQuestions from '../common/SuggestedQuestions';
+import ChatInput from '../common/ChatInput';
 
 interface Channel {
   id: string;
@@ -24,8 +27,18 @@ interface Channel {
 const Layout: React.FC = () => {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+  const [selectedModel, setSelectedModel] = useState('general');
   const [loading, setLoading] = useState(true);
   const { token } = useAuth();
+
+  const suggestedQuestions = [
+    "How can I help you today?",
+    "What would you like to know?",
+    "Tell me about your project",
+    "Need technical assistance?",
+    "Want to discuss business ideas?",
+    "Looking for creative inspiration?"
+  ];
 
   useEffect(() => {
     fetchChannels();
@@ -54,6 +67,19 @@ const Layout: React.FC = () => {
   const handleChannelCreated = (channel: Channel) => {
     setChannels([channel, ...channels]);
     setSelectedChannel(channel);
+  };
+
+  const handleModelSelect = (modelId: string) => {
+    setSelectedModel(modelId);
+  };
+
+  const handleSendMessage = (message: string) => {
+    console.log('Sending message:', message, 'with model:', selectedModel);
+    // This would integrate with your existing chat functionality
+  };
+
+  const handleSuggestedQuestion = (question: string) => {
+    handleSendMessage(question);
   };
 
   if (loading) {
@@ -98,6 +124,8 @@ const Layout: React.FC = () => {
             height: 'calc(100vh - 64px)',
             width: '100%',
             overflow: 'hidden',
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%)',
+            position: 'relative',
           }}
         >
           {selectedChannel ? (
@@ -122,11 +150,13 @@ const Layout: React.FC = () => {
                 height: '100%',
                 py: 4,
                 textAlign: 'center',
+                px: 4,
               }}
             >
               <Box
                 sx={{
                   width: '100%',
+                  maxWidth: '800px',
                   mb: 6,
                 }}
               >
@@ -148,8 +178,23 @@ const Layout: React.FC = () => {
                 >
                   💬
                 </Box>
-                <h2>Welcome to Chat Platform</h2>
-                <p>Select a channel to start messaging</p>
+                <Typography variant="h4" component="h1" sx={{ fontWeight: 600, mb: 1 }}>
+                  Welcome! How can I assist you today?
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: '600px', mx: 'auto' }}>
+                  Choose a semantic model below to get started with your conversation.
+                </Typography>
+                
+                <ModelSelector selectedModel={selectedModel} onModelSelect={handleModelSelect} />
+                
+                <SuggestedQuestions 
+                  questions={suggestedQuestions} 
+                  onSelectQuestion={handleSuggestedQuestion} 
+                />
+              </Box>
+              
+              <Box sx={{ width: '100%', maxWidth: '600px', mx: 'auto' }}>
+                <ChatInput onSendMessage={handleSendMessage} />
               </Box>
             </Box>
           )}
