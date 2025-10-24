@@ -73,6 +73,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   const theme = useTheme();
   const { token, user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Debug logging
+  console.log('Sidebar - User:', user);
+  console.log('Sidebar - Token:', token);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBrowserModal, setShowBrowserModal] = useState(false);
   const [showUserBrowser, setShowUserBrowser] = useState(false);
@@ -292,20 +296,29 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
             <Box>
               <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
-                {user?.displayName || user?.username}
+                {user?.displayName || user?.username || 'User'}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2 }}>
-                {user?.email}
+                {user?.email || 'user@example.com'}
               </Typography>
             </Box>
           </Box>
           <IconButton 
-            size="small" 
-            onClick={logout}
+            size="medium" 
+            onClick={() => {
+              console.log('Logout clicked');
+              logout();
+            }}
             title="Logout"
-            sx={{ color: theme.palette.text.secondary }}
+            sx={{ 
+              color: theme.palette.error.main,
+              backgroundColor: theme.palette.error.main + '10',
+              '&:hover': {
+                backgroundColor: theme.palette.error.main + '20',
+              }
+            }}
           >
-            <LogoutIcon fontSize="small" />
+            <LogoutIcon fontSize="medium" />
           </IconButton>
         </Box>
       </Box>
