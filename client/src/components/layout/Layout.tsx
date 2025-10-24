@@ -29,6 +29,7 @@ const Layout: React.FC = () => {
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const [selectedModel, setSelectedModel] = useState('general');
   const [loading, setLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(true);
   const { token } = useAuth();
 
   const suggestedQuestions = [
@@ -52,6 +53,7 @@ const Layout: React.FC = () => {
       setChannels(response.data.channels);
       if (response.data.channels.length > 0 && !selectedChannel) {
         setSelectedChannel(response.data.channels[0]);
+        setShowWelcome(false);
       }
     } catch (error) {
       console.error('Error fetching channels:', error);
@@ -62,24 +64,124 @@ const Layout: React.FC = () => {
 
   const handleChannelSelect = (channel: Channel) => {
     setSelectedChannel(channel);
+    setShowWelcome(false);
   };
 
   const handleChannelCreated = (channel: Channel) => {
     setChannels([channel, ...channels]);
     setSelectedChannel(channel);
+    setShowWelcome(false);
   };
 
   const handleModelSelect = (modelId: string) => {
     setSelectedModel(modelId);
   };
 
-  const handleSendMessage = (message: string) => {
-    console.log('Sending message:', message, 'with model:', selectedModel);
-    // This would integrate with your existing chat functionality
+  const handleSendMessage = async (message: string, file?: File, isImage?: boolean) => {
+    if (!selectedChannel) {
+      // If no channel selected, create a new channel first
+      try {
+        const response = await axios.post(
+          `${API_URL}/api/channels`,
+          {
+            name: `${selectedModel} Chat`,
+            description: `Chat using ${selectedModel} model`,
+            type: 'public'
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        const newChannel = response.data.channel;
+        setChannels([newChannel, ...channels]);
+        setSelectedChannel(newChannel);
+        setShowWelcome(false);
+        
+        // Send the message to the new channel
+        await sendMessageToChannel(newChannel.id, message, file, isImage);
+      } catch (error) {
+        console.error('Error creating channel:', error);
+      }
+    } else {
+      // Send message to existing channel
+      await sendMessageToChannel(selectedChannel.id, message, file, isImage);
+    }
+  };
+
+  const sendMessageToChannel = async (channelId: string, content: string, file?: File, isImage?: boolean) => {
+    try {
+      if (file) {
+        // Handle file upload
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('channelId', channelId);
+        if (content) formData.append('content', content);
+
+        const endpoint = isImage ? '/api/messages/image' : '/api/messages/file';
+        await axios.post(`${API_URL}${endpoint}`, formData, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        // Handle text message
+        await axios.post(
+          `${API_URL}/api/messages`,
+          {
+            channelId,
+            content,
+            type: 'text'
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   };
 
   const handleSuggestedQuestion = (question: string) => {
     handleSendMessage(question);
+  };
+
+  const handleNewChat = async () => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/channels`,
+        {
+          name: `New ${selectedModel} Chat`,
+          description: `Chat using ${selectedModel} model`,
+          type: 'public'
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      const newChannel = response.data.channel;
+      setChannels([newChannel, ...channels]);
+      setSelectedChannel(newChannel);
+      setShowWelcome(false);
+    } catch (error) {
+      console.error('Error creating new chat:', error);
+    }
+  };
+
+  const handleDeleteChannel = async (channelId: string) => {
+    try {
+      await axios.delete(`${API_URL}/api/channels/${channelId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setChannels(channels.filter(ch => ch.id !== channelId));
+      if (selectedChannel?.id === channelId) {
+        setSelectedChannel(null);
+        setShowWelcome(true);
+      }
+    } catch (error) {
+      console.error('Error deleting channel:', error);
+    }
   };
 
   if (loading) {
@@ -102,6 +204,8 @@ const Layout: React.FC = () => {
         selectedChannel={selectedChannel}
         onSelectChannel={handleChannelSelect}
         onChannelCreated={handleChannelCreated}
+        onNewChat={handleNewChat}
+        onDeleteChannel={handleDeleteChannel}
       />
       <Box
         component="main"
@@ -115,7 +219,7 @@ const Layout: React.FC = () => {
           position: 'relative',
         }}
       >
-        <Header />
+        <Header selectedModel={selectedModel} onModelSelect={handleModelSelect} />
         <Box
           sx={{
             flex: 1,
@@ -128,15 +232,17 @@ const Layout: React.FC = () => {
             position: 'relative',
           }}
         >
-          {selectedChannel ? (
+          {selectedChannel && !showWelcome ? (
             <ChatWindow
               channel={selectedChannel}
               onChannelDeleted={() => {
                 setSelectedChannel(null);
+                setShowWelcome(true);
                 fetchChannels();
               }}
               onChannelLeft={() => {
                 setSelectedChannel(null);
+                setShowWelcome(true);
                 fetchChannels();
               }}
             />

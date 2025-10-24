@@ -17,7 +17,12 @@ import {
 import { useThemeContext } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  selectedModel: string;
+  onModelSelect: (modelId: string) => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ selectedModel, onModelSelect }) => {
   const theme = useTheme();
   const { mode, toggleTheme } = useThemeContext();
   const { user } = useAuth();
@@ -43,7 +48,8 @@ const Header: React.FC = () => {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <Select
-            value="general"
+            value={selectedModel}
+            onChange={(e) => onModelSelect(e.target.value)}
             displayEmpty
             sx={{
               '& .MuiSelect-select': {

@@ -44,13 +44,17 @@ interface SidebarProps {
   selectedChannel: Channel | null;
   onSelectChannel: (channel: Channel) => void;
   onChannelCreated: (channel: Channel) => void;
+  onNewChat: () => void;
+  onDeleteChannel: (channelId: string) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
   channels, 
   selectedChannel, 
   onSelectChannel, 
-  onChannelCreated 
+  onChannelCreated,
+  onNewChat,
+  onDeleteChannel
 }) => {
   const theme = useTheme();
   const { user } = useAuth();
@@ -111,27 +115,25 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* New Chat Button */}
       <Box sx={{ px: 2, mb: 2 }}>
-        <Button
-          fullWidth
-          variant="outlined"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            console.log('Create new chat');
-          }}
-          sx={{
-            borderRadius: 2,
-            py: 1,
-            justifyContent: 'flex-start',
-            pl: 2,
-            borderColor: theme.palette.primary.main,
-            color: theme.palette.primary.main,
-            '&:hover': {
-              backgroundColor: theme.palette.primary.main + '10',
-            },
-          }}
-        >
-          New chat
-        </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={onNewChat}
+            sx={{
+              borderRadius: 2,
+              py: 1,
+              justifyContent: 'flex-start',
+              pl: 2,
+              borderColor: theme.palette.primary.main,
+              color: theme.palette.primary.main,
+              '&:hover': {
+                backgroundColor: theme.palette.primary.main + '10',
+              },
+            }}
+          >
+            New chat
+          </Button>
       </Box>
 
       {/* Recent Chats */}
@@ -173,7 +175,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   size="small"
                   onClick={(e) => {
                     e.stopPropagation();
-                    console.log('Delete chat', channel.id);
+                    onDeleteChannel(channel.id);
                   }}
                   sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
                 >
