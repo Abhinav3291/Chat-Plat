@@ -1,41 +1,49 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { ThemeProvider as MuiThemeProvider } from '@mui/material';
+import { lightTheme, darkTheme } from '../theme';
 
-type Theme = 'light' | 'dark';
+type ThemeMode = 'light' | 'dark';
 
-interface ThemeContextType {
-  theme: Theme;
+interface ThemeContextProps {
+  mode: ThemeMode;
   toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme;
-    return savedTheme || 'light';
-  });
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
-  };
-
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
-};
-
-export const useTheme = () => {
+export const useThemeContext = () => {
   const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+  if (!context) {
+    throw new Error('useThemeContext must be used within a ThemeProvider');
   }
   return context;
+};
+
+interface ThemeProviderProps {
+  children: React.ReactNode;
+}
+
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+  const [mode, setMode] = useState<ThemeMode>(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return (savedTheme === 'dark' ? 'dark' : 'light') as ThemeMode;
+  });
+
+  const toggleTheme = () => {
+    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  };
+
+  useEffect(() => {
+    localStorage.setItem('theme', mode);
+    document.documentElement.setAttribute('data-theme', mode);
+  }, [mode]);
+
+  return (
+    <ThemeContext.Provider value={{ mode, toggleTheme }}>
+      <MuiThemeProvider theme={mode === 'dark' ? darkTheme : lightTheme}>
+        {children}
+      </MuiThemeProvider>
+    </ThemeContext.Provider>
+  );
 };
 

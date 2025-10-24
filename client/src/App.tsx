@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { CssBaseline } from '@mui/material';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
-import ChatLayout from './components/Chat/ChatLayout';
+import Layout from './components/layout/Layout';
 import './index.css';
 
 const AppContent: React.FC = () => {
@@ -30,7 +31,7 @@ const AppContent: React.FC = () => {
 
   return (
     <SocketProvider>
-      <ChatLayout />
+      <Layout />
     </SocketProvider>
   );
 };
@@ -39,6 +40,7 @@ const App: React.FC = () => {
   return (
     <ThemeProvider>
       <AuthProvider>
+        <CssBaseline />
         <div className="app">
           <AppContent />
         </div>
