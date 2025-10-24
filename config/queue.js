@@ -3,8 +3,9 @@ const Queue = require('bull');
 let messageQueue = null;
 let imageQueue = null;
 
-// Only create queues if Redis is available
-if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+// Only create queues if Redis is explicitly enabled
+// Set ENABLE_REDIS=true to enable Redis features
+if (process.env.ENABLE_REDIS === 'true' && (process.env.REDIS_URL || process.env.REDIS_HOST)) {
   try {
     const redisConfig = process.env.REDIS_URL
       ? process.env.REDIS_URL
@@ -63,12 +64,15 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST) {
       console.error(`Image job ${job.id} failed:`, err);
     });
 
-    console.log('Bull queues initialized with Redis');
+    console.log('✓ Bull queues initialized with Redis');
   } catch (error) {
-    console.log('Warning: Bull queues not available (Redis not configured)');
+    console.log('⚠ Bull queues initialization failed:', error.message);
   }
 } else {
-  console.log('Info: Bull queues disabled (Redis not configured)');
+  console.log('ℹ Bull queues disabled (running in single-instance mode)');
+  if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+    console.log('ℹ Redis detected but not enabled. Set ENABLE_REDIS=true to use queues.');
+  }
 }
 
 module.exports = { messageQueue, imageQueue };

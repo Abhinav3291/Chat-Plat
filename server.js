@@ -22,29 +22,53 @@ const io = socketio(server, {
   }
 });
 
-// Optional Redis adapter for horizontal scaling
-if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+// Optional Redis adapter for horizontal scaling (disabled by default)
+// Set ENABLE_REDIS=true to enable Redis features
+if (process.env.ENABLE_REDIS === 'true' && (process.env.REDIS_URL || process.env.REDIS_HOST)) {
   try {
     const redisAdapter = require('socket.io-redis');
     const redisUrl = process.env.REDIS_URL;
     
     if (redisUrl) {
       // Use REDIS_URL for cloud platforms
-      io.adapter(redisAdapter(redisUrl));
+      const adapter = redisAdapter(redisUrl);
+      
+      // Handle adapter errors to prevent crashes
+      adapter.pubClient.on('error', (err) => {
+        console.error('Redis Pub Client Error (non-fatal):', err.message);
+      });
+      adapter.subClient.on('error', (err) => {
+        console.error('Redis Sub Client Error (non-fatal):', err.message);
+      });
+      
+      io.adapter(adapter);
     } else {
       // Use individual params for local development
-      io.adapter(redisAdapter({
+      const adapter = redisAdapter({
         host: process.env.REDIS_HOST,
         port: process.env.REDIS_PORT,
         password: process.env.REDIS_PASSWORD
-      }));
+      });
+      
+      // Handle adapter errors to prevent crashes
+      adapter.pubClient.on('error', (err) => {
+        console.error('Redis Pub Client Error (non-fatal):', err.message);
+      });
+      adapter.subClient.on('error', (err) => {
+        console.error('Redis Sub Client Error (non-fatal):', err.message);
+      });
+      
+      io.adapter(adapter);
     }
-    console.log('Socket.io using Redis adapter for horizontal scaling');
+    console.log('✓ Socket.io using Redis adapter for horizontal scaling');
   } catch (error) {
-    console.log('Redis adapter not available, using in-memory adapter');
+    console.log('⚠ Redis adapter initialization failed, using in-memory adapter:', error.message);
   }
 } else {
-  console.log('Socket.io using in-memory adapter (single instance)');
+  console.log('✓ Socket.io using in-memory adapter (single instance mode)');
+  if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+    console.log('ℹ Redis detected but not enabled. Set ENABLE_REDIS=true to use Redis.');
+  }
 }
 
 // Middleware
@@ -107,9 +131,11 @@ const startServer = async () => {
     }
     
     server.listen(PORT, () => {
+      console.log(`\n${'='.repeat(60)}`);
       console.log(`✓ Server running on port ${PORT}`);
-      console.log(`✓ Environment: ${process.env.NODE_ENV}`);
-      console.log(`✓ Mode: ${redisClient ? 'Production (with Redis)' : 'Development (without Redis)'}`);
+      console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`✓ Mode: ${process.env.ENABLE_REDIS === 'true' ? 'Multi-instance (with Redis)' : 'Single-instance (no Redis)'}`);
+      console.log(`${'='.repeat(60)}\n`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

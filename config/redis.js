@@ -1,9 +1,10 @@
 const redis = require('redis');
 
-// Only create Redis client if Redis URL or host is provided
+// Only create Redis client if explicitly enabled
+// Set ENABLE_REDIS=true to enable Redis features
 let redisClient = null;
 
-if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+if (process.env.ENABLE_REDIS === 'true' && (process.env.REDIS_URL || process.env.REDIS_HOST)) {
   try {
     if (process.env.REDIS_URL) {
       // Use REDIS_URL for cloud platforms (Render, Heroku, etc.)
@@ -23,16 +24,19 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST) {
       });
     }
 
-    redisClient.on('error', (err) => console.error('Redis Client Error:', err));
+    redisClient.on('error', (err) => console.error('⚠ Redis Client Error (non-fatal):', err.message));
     redisClient.on('connect', () => console.log('✓ Redis Client Connected'));
     
-    console.log('Redis client configured');
+    console.log('✓ Redis client configured');
   } catch (error) {
     console.log('Warning: Redis client configuration failed:', error.message);
     redisClient = null;
   }
 } else {
-  console.log('Info: Redis not configured (optional for single-instance deployment)');
+  console.log('ℹ Redis disabled (running in single-instance mode)');
+  if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+    console.log('ℹ Redis detected but not enabled. Set ENABLE_REDIS=true to use Redis.');
+  }
 }
 
 // Export a null-safe Redis client
