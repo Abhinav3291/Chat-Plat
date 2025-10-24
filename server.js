@@ -6,6 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
+const path = require('path');
 const { sequelize } = require('./config/database');
 const socketHandler = require('./socket/socketHandler');
 
@@ -43,6 +44,14 @@ app.use('/api/reactions', require('./routes/reactions'));
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+// Handle React routing - return index.html for all non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
 
 // Socket.io connection handling
