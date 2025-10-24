@@ -71,12 +71,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onDeleteChannel
 }) => {
   const theme = useTheme();
-  const { token, user, logout } = useAuth();
+  const { token } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Debug logging
-  console.log('Sidebar - User:', user);
-  console.log('Sidebar - Token:', token);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBrowserModal, setShowBrowserModal] = useState(false);
   const [showUserBrowser, setShowUserBrowser] = useState(false);
@@ -262,66 +258,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         </List>
       </Box>
 
-      {/* User Profile Section */}
-      <Box sx={{ mt: 'auto' }}>
-        <Divider />
-        <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {user?.avatar ? (
-              <img 
-                src={`${API_URL}${user.avatar}`} 
-                alt={user.displayName} 
-                style={{ 
-                  width: 32, 
-                  height: 32, 
-                  borderRadius: '50%',
-                  objectFit: 'cover'
-                }} 
-              />
-            ) : (
-              <Box sx={{ 
-                width: 32, 
-                height: 32, 
-                borderRadius: '50%', 
-                bgcolor: theme.palette.primary.main, 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                color: theme.palette.primary.contrastText,
-                fontSize: '14px',
-                fontWeight: 500
-              }}>
-                {user?.displayName?.charAt(0)?.toUpperCase() || user?.username?.charAt(0)?.toUpperCase() || 'U'}
-              </Box>
-            )}
-            <Box>
-              <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
-                {user?.displayName || user?.username || 'User'}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2 }}>
-                {user?.email || 'user@example.com'}
-              </Typography>
-            </Box>
-          </Box>
-          <IconButton 
-            size="medium" 
-            onClick={() => {
-              console.log('Logout clicked');
-              logout();
-            }}
-            title="Logout"
-            sx={{ 
-              color: theme.palette.error.main,
-              backgroundColor: theme.palette.error.main + '10',
-              '&:hover': {
-                backgroundColor: theme.palette.error.main + '20',
-              }
-            }}
-          >
-            <LogoutIcon fontSize="medium" />
-          </IconButton>
-        </Box>
-      </Box>
 
       {/* Create Channel Modal */}
       <Dialog open={showCreateModal} onClose={() => setShowCreateModal(false)} maxWidth="sm" fullWidth>
