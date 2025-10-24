@@ -35,6 +35,7 @@ import {
   Close as CloseIcon,
   Public as PublicIcon,
   Lock as LockIcon,
+  Logout as LogoutIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import ChannelBrowser from '../Chat/ChannelBrowser';
@@ -70,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onDeleteChannel
 }) => {
   const theme = useTheme();
-  const { token } = useAuth();
+  const { token, user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBrowserModal, setShowBrowserModal] = useState(false);
@@ -255,6 +256,58 @@ const Sidebar: React.FC<SidebarProps> = ({
             </ListItemButton>
           </ListItem>
         </List>
+      </Box>
+
+      {/* User Profile Section */}
+      <Box sx={{ mt: 'auto' }}>
+        <Divider />
+        <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {user?.avatar ? (
+              <img 
+                src={`${API_URL}${user.avatar}`} 
+                alt={user.displayName} 
+                style={{ 
+                  width: 32, 
+                  height: 32, 
+                  borderRadius: '50%',
+                  objectFit: 'cover'
+                }} 
+              />
+            ) : (
+              <Box sx={{ 
+                width: 32, 
+                height: 32, 
+                borderRadius: '50%', 
+                bgcolor: theme.palette.primary.main, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                color: theme.palette.primary.contrastText,
+                fontSize: '14px',
+                fontWeight: 500
+              }}>
+                {user?.displayName?.charAt(0)?.toUpperCase() || user?.username?.charAt(0)?.toUpperCase() || 'U'}
+              </Box>
+            )}
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
+                {user?.displayName || user?.username}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2 }}>
+                {user?.email}
+              </Typography>
+            </Box>
+          </Box>
+          <IconButton 
+            size="small" 
+            onClick={logout}
+            title="Logout"
+            sx={{ color: theme.palette.text.secondary }}
+          >
+            <LogoutIcon fontSize="small" />
+          </IconButton>
+        </Box>
       </Box>
 
       {/* Create Channel Modal */}
