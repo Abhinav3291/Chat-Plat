@@ -125,12 +125,14 @@ router.post('/', async (req, res, next) => {
       }]
     });
 
-    // Add to processing queue
-    await messageQueue.add({
-      messageId: message.id,
-      channelId,
-      content
-    });
+    // Add to processing queue (if available)
+    if (messageQueue) {
+      await messageQueue.add({
+        messageId: message.id,
+        channelId,
+        content
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -180,11 +182,13 @@ router.post('/image', upload.single('image'), async (req, res, next) => {
       }]
     });
 
-    // Add to image processing queue
-    await imageQueue.add({
-      messageId: message.id,
-      imagePath: imageUrl
-    });
+    // Add to image processing queue (if available)
+    if (imageQueue) {
+      await imageQueue.add({
+        messageId: message.id,
+        imagePath: imageUrl
+      });
+    }
 
     res.status(201).json({
       success: true,

@@ -13,19 +13,39 @@ const socketHandler = require('./socket/socketHandler');
 const app = express();
 const server = http.createServer(app);
 
-// Socket.io setup with Redis adapter
+// Socket.io setup
 const io = socketio(server, {
   cors: {
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
     methods: ['GET', 'POST'],
     credentials: true
-  },
-  adapter: require('socket.io-redis')({
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-    password: process.env.REDIS_PASSWORD
-  })
+  }
 });
+
+// Optional Redis adapter for horizontal scaling
+if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+  try {
+    const redisAdapter = require('socket.io-redis');
+    const redisUrl = process.env.REDIS_URL;
+    
+    if (redisUrl) {
+      // Use REDIS_URL for cloud platforms
+      io.adapter(redisAdapter(redisUrl));
+    } else {
+      // Use individual params for local development
+      io.adapter(redisAdapter({
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT,
+        password: process.env.REDIS_PASSWORD
+      }));
+    }
+    console.log('Socket.io using Redis adapter for horizontal scaling');
+  } catch (error) {
+    console.log('Redis adapter not available, using in-memory adapter');
+  }
+} else {
+  console.log('Socket.io using in-memory adapter (single instance)');
+}
 
 // Middleware
 app.use(helmet());
@@ -76,12 +96,20 @@ const startServer = async () => {
     await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
     console.log('✓ Database synced');
     
-    await redisClient.connect();
-    console.log('✓ Redis connected successfully');
+    // Connect to Redis only if configured
+    if (redisClient) {
+      try {
+        await redisClient.connect();
+        console.log('✓ Redis connected successfully');
+      } catch (error) {
+        console.log('⚠ Redis connection failed (optional):', error.message);
+      }
+    }
     
     server.listen(PORT, () => {
       console.log(`✓ Server running on port ${PORT}`);
       console.log(`✓ Environment: ${process.env.NODE_ENV}`);
+      console.log(`✓ Mode: ${redisClient ? 'Production (with Redis)' : 'Development (without Redis)'}`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
