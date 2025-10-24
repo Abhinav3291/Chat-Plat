@@ -1,38 +1,20 @@
 const jwt = require('jsonwebtoken');
 const { User, Channel, ChannelMember } = require('../models');
-const redisClient = require('../config/redis');
 
-// In-memory socket mapping for single-instance deployments (when Redis is not available)
+// In-memory socket mapping for single-instance deployments
 const socketMap = new Map(); // userId -> socketId
-const userMap = new Map(); // socketId -> userId
 
-// Helper functions for socket mapping (works with or without Redis)
-const setSocketMapping = async (userId, socketId) => {
-  if (redisClient) {
-    await redisClient.set(`user:${userId}:socketId`, socketId);
-    await redisClient.set(`socket:${socketId}:userId`, userId);
-  } else {
-    socketMap.set(userId, socketId);
-    userMap.set(socketId, userId);
-  }
+// Helper functions for socket mapping
+const setSocketMapping = (userId, socketId) => {
+  socketMap.set(userId, socketId);
 };
 
-const getSocketIdByUserId = async (userId) => {
-  if (redisClient) {
-    return await redisClient.get(`user:${userId}:socketId`);
-  } else {
-    return socketMap.get(userId);
-  }
+const getSocketIdByUserId = (userId) => {
+  return socketMap.get(userId);
 };
 
-const deleteSocketMapping = async (userId, socketId) => {
-  if (redisClient) {
-    await redisClient.del(`user:${userId}:socketId`);
-    await redisClient.del(`socket:${socketId}:userId`);
-  } else {
-    socketMap.delete(userId);
-    userMap.delete(socketId);
-  }
+const deleteSocketMapping = (userId) => {
+  socketMap.delete(userId);
 };
 
 module.exports = (io) => {
@@ -67,7 +49,7 @@ module.exports = (io) => {
     await socket.user.update({ status: 'online', lastSeen: new Date() });
     
     // Store user socket mapping
-    await setSocketMapping(socket.userId, socket.id);
+    setSocketMapping(socket.userId, socket.id);
 
     // Join user's channels
     const memberships = await ChannelMember.findAll({
@@ -243,7 +225,7 @@ module.exports = (io) => {
         await socket.user.update({ status: 'offline', lastSeen: new Date() });
 
         // Remove socket mapping
-        await deleteSocketMapping(socket.userId, socket.id);
+        deleteSocketMapping(socket.userId);
 
         // Notify all channels
         memberships.forEach(membership => {
@@ -263,7 +245,7 @@ module.exports = (io) => {
         const { targetUserId, channelId } = data;
         
         // Get target user's socket
-        const targetSocketId = await getSocketIdByUserId(targetUserId);
+        const targetSocketId = getSocketIdByUserId(targetUserId);
         
         if (targetSocketId) {
           io.to(targetSocketId).emit('call:incoming', {
@@ -281,7 +263,7 @@ module.exports = (io) => {
     socket.on('call:accept', async (data) => {
       try {
         const { callerId } = data;
-        const callerSocketId = await getSocketIdByUserId(callerId);
+        const callerSocketId = getSocketIdByUserId(callerId);
         
         if (callerSocketId) {
           io.to(callerSocketId).emit('call:accepted', {
@@ -297,7 +279,7 @@ module.exports = (io) => {
     socket.on('call:reject', async (data) => {
       try {
         const { callerId } = data;
-        const callerSocketId = await getSocketIdByUserId(callerId);
+        const callerSocketId = getSocketIdByUserId(callerId);
         
         if (callerSocketId) {
           io.to(callerSocketId).emit('call:rejected', {
@@ -313,7 +295,7 @@ module.exports = (io) => {
     socket.on('call:offer', async (data) => {
       try {
         const { targetUserId, offer } = data;
-        const targetSocketId = await getSocketIdByUserId(targetUserId);
+        const targetSocketId = getSocketIdByUserId(targetUserId);
         
         if (targetSocketId) {
           io.to(targetSocketId).emit('call:offer', {
@@ -329,7 +311,7 @@ module.exports = (io) => {
     socket.on('call:answer', async (data) => {
       try {
         const { targetUserId, answer } = data;
-        const targetSocketId = await getSocketIdByUserId(targetUserId);
+        const targetSocketId = getSocketIdByUserId(targetUserId);
         
         if (targetSocketId) {
           io.to(targetSocketId).emit('call:answer', {
@@ -345,7 +327,7 @@ module.exports = (io) => {
     socket.on('call:ice-candidate', async (data) => {
       try {
         const { targetUserId, candidate } = data;
-        const targetSocketId = await getSocketIdByUserId(targetUserId);
+        const targetSocketId = getSocketIdByUserId(targetUserId);
         
         if (targetSocketId) {
           io.to(targetSocketId).emit('call:ice-candidate', {
@@ -361,7 +343,7 @@ module.exports = (io) => {
     socket.on('call:end', async (data) => {
       try {
         const { targetUserId } = data;
-        const targetSocketId = await getSocketIdByUserId(targetUserId);
+        const targetSocketId = getSocketIdByUserId(targetUserId);
         
         if (targetSocketId) {
           io.to(targetSocketId).emit('call:ended', {

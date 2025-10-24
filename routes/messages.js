@@ -2,7 +2,6 @@ const express = require('express');
 const { Message, User, Channel, ChannelMember, DeletedMessage, Reaction } = require('../models');
 const { protect } = require('../middleware/auth');
 const upload = require('../middleware/upload');
-const { messageQueue, imageQueue } = require('../config/queue');
 const { Op } = require('sequelize');
 
 const router = express.Router();
@@ -125,15 +124,6 @@ router.post('/', async (req, res, next) => {
       }]
     });
 
-    // Add to processing queue (if available)
-    if (messageQueue) {
-      await messageQueue.add({
-        messageId: message.id,
-        channelId,
-        content
-      });
-    }
-
     res.status(201).json({
       success: true,
       message
@@ -181,14 +171,6 @@ router.post('/image', upload.single('image'), async (req, res, next) => {
         attributes: ['id', 'username', 'displayName', 'avatar']
       }]
     });
-
-    // Add to image processing queue (if available)
-    if (imageQueue) {
-      await imageQueue.add({
-        messageId: message.id,
-        imagePath: imageUrl
-      });
-    }
 
     res.status(201).json({
       success: true,
