@@ -74,14 +74,32 @@ module.exports = (io) => {
       try {
         const { channelId } = data;
         
-        // Verify membership
+        // Get channel info to check if it's public
+        const channel = await Channel.findByPk(channelId);
+        if (!channel) {
+          return socket.emit('error', { message: 'Channel not found' });
+        }
+
+        // For public channels, allow joining without membership check
+        if (channel.type === 'public') {
+          socket.join(`channel:${channelId}`);
+          return socket.emit('channel:joined', { 
+            channelId,
+            isPublic: true
+          });
+        }
+
+        // For private channels, verify membership
         const isMember = await ChannelMember.findOne({
           where: { channelId, userId: socket.userId }
         });
 
         if (isMember) {
           socket.join(`channel:${channelId}`);
-          socket.emit('channel:joined', { channelId });
+          socket.emit('channel:joined', { 
+            channelId,
+            isPublic: false
+          });
         }
       } catch (error) {
         console.error('Error joining channel:', error);
@@ -101,17 +119,30 @@ module.exports = (io) => {
       try {
         const { channelId, messageId } = data;
         
-        // Verify membership
-        const isMember = await ChannelMember.findOne({
-          where: { channelId, userId: socket.userId }
-        });
-
-        if (!isMember) {
-          return socket.emit('error', { message: 'Not a member of this channel' });
+        // Get channel info to check if it's public
+        const channel = await Channel.findByPk(channelId);
+        if (!channel) {
+          return socket.emit('error', { message: 'Channel not found' });
         }
 
-        // Broadcast to channel
-        io.to(`channel:${channelId}`).emit('message:new', data);
+        // For public channels, allow sending messages to all users who can see the channel
+        if (channel.type === 'public') {
+          // For public channels, we'll broadcast to all users who can see the channel
+          // No need to check membership for public channels
+          io.to(`channel:${channelId}`).emit('message:new', data);
+        } else {
+          // For private channels, verify membership
+          const isMember = await ChannelMember.findOne({
+            where: { channelId, userId: socket.userId }
+          });
+
+          if (!isMember) {
+            return socket.emit('error', { message: 'Not a member of this channel' });
+          }
+
+          // Broadcast to channel members
+          io.to(`channel:${channelId}`).emit('message:new', data);
+        }
       } catch (error) {
         console.error('Error sending message:', error);
         socket.emit('error', { message: 'Failed to send message' });

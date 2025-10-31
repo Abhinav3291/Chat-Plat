@@ -169,11 +169,15 @@ router.get('/public', async (req, res, next) => {
 
     const memberChannelIds = userMemberships.map(m => m.channelId);
 
-    // Add isMember flag to each channel
-    const channelsWithMemberStatus = publicChannels.map(channel => ({
-      ...channel.toJSON(),
-      isMember: memberChannelIds.includes(channel.id)
-    }));
+    // Add isMember flag and ensure isPublic flag is set for each channel
+    const channelsWithMemberStatus = publicChannels.map(channel => {
+      const channelData = channel.toJSON();
+      return {
+        ...channelData,
+        isMember: memberChannelIds.includes(channel.id),
+        isPublic: true // Explicitly mark as public
+      };
+    });
 
     res.json({
       success: true,
